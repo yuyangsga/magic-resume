@@ -14,7 +14,9 @@ export const toString = (value: unknown) =>
 export const toStringArray = (value: unknown) => {
   if (Array.isArray(value)) {
     return value
-      .map((item) => toString(item))
+      .flatMap((item) =>
+        typeof item === "string" ? [toString(item)] : toStringArray(item)
+      )
       .filter(Boolean);
   }
 
@@ -34,6 +36,28 @@ export const toListHtml = (value: unknown) => {
   return `<ul>${items
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("")}</ul>`;
+};
+
+export const toParagraphHtml = (value: unknown) => {
+  const items = toStringArray(value);
+  if (items.length === 0) return "";
+
+  return items.map((item) => `<p>${escapeHtml(item)}</p>`).join("");
+};
+
+const normalizeSectionId = (value: unknown) => {
+  const id = toString(value);
+  if (id === "customSections") return "custom";
+  return id;
+};
+
+const uniqueById = <T extends { id: string }>(items: T[]) => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (!item.id || seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
 };
 
 export const extractJsonContent = (content: string) => {
@@ -59,7 +83,11 @@ export const extractJsonContent = (content: string) => {
   throw new Error("Invalid AI JSON content");
 };
 
-export const createResumeFromAIResult = (result: any, fileName: string) => {
+export const createResumeFromAIResult = (
+  result: any,
+  fileName: string,
+  locale = "zh"
+) => {
   const now = new Date().toISOString();
   const id = generateUUID();
 
@@ -68,7 +96,134 @@ export const createResumeFromAIResult = (result: any, fileName: string) => {
   const projects = Array.isArray(result?.projects) ? result.projects : [];
 
   const skillSource = result?.skillContent ?? result?.skills;
-  const skillContent = toListHtml(skillSource);
+  const skillsSectionFound =
+    result?.skillsSectionFound === true ||
+    typeof result?.skillContent === "string";
+  const skillContent = skillsSectionFound ? toListHtml(skillSource) : "";
+  const selfEvaluationSource =
+    result?.selfEvaluation ??
+    result?.selfEvaluationContent ??
+    result?.summary ??
+    result?.personalAdvantage ??
+    result?.personalAdvantages;
+  const selfEvaluationContent = toParagraphHtml(selfEvaluationSource);
+  const customSections = Array.isArray(result?.customSections)
+    ? result.customSections
+    : [];
+  const certificates = toStringArray(result?.certificates);
+  const certificateTitle = locale === "en" ? "Certificates" : "资格证书";
+  const customData: Record<string, any[]> = {};
+
+  customSections.forEach((section: any, index: number) => {
+    const sectionId = `custom-${index + 1}`;
+    const items = Array.isArray(section?.items) ? section.items : [];
+    customData[sectionId] = items
+      .map((item: any) => ({
+        id: generateUUID(),
+        title: toString(item?.title),
+        subtitle: toString(item?.subtitle),
+        dateRange: toString(item?.dateRange ?? item?.date),
+        description: toListHtml(item?.description || item?.details),
+        visible: true,
+      }))
+      .filter((item: any) => item.title || item.subtitle || item.dateRange || item.description);
+  });
+
+  if (certificates.length > 0 && !customSections.length) {
+    customData["custom-1"] = certificates.map((certificate) => ({
+      id: generateUUID(),
+      title: certificate,
+      subtitle: "",
+      dateRange: "",
+      description: "",
+      visible: true,
+    }));
+  }
+
+  const baseMenuSections = initialResumeState.menuSections.map((section) => ({
+    ...section,
+  }));
+  const basicSection = baseMenuSections.find((section) => section.id === "basic");
+  const moduleSections = [
+    selfEvaluationContent && {
+      id: "selfEvaluation",
+      title: toString(result?.selfEvaluationTitle) || (locale === "en" ? "Summary" : "个人优势"),
+      icon: "💬",
+      enabled: true,
+    },
+    skillContent && {
+      id: "skills",
+      title: locale === "en" ? "Skills" : "专业技能",
+      icon: "⚡",
+      enabled: true,
+    },
+    experience.length > 0 && {
+      id: "experience",
+      title: locale === "en" ? "Experience" : "工作经验",
+      icon: "💼",
+      enabled: true,
+    },
+    projects.length > 0 && {
+      id: "projects",
+      title: locale === "en" ? "Projects" : "项目经历",
+      icon: "🚀",
+      enabled: true,
+    },
+    education.length > 0 && {
+      id: "education",
+      title: locale === "en" ? "Education" : "教育经历",
+      icon: "🎓",
+      enabled: true,
+    },
+    ...Object.keys(customData).map((sectionId, index) => ({
+      id: sectionId,
+      title: toString(customSections[index]?.title) || certificateTitle,
+      icon: "🏆",
+      enabled: true,
+    })),
+  ].filter(Boolean) as Array<{
+    id: string;
+    title: string;
+    icon: string;
+    enabled: boolean;
+  }>;
+
+  const preferredOrder = Array.isArray(result?.sectionOrder)
+    ? result.sectionOrder.map(normalizeSectionId).filter(Boolean)
+    : [];
+  const orderedModules =
+    preferredOrder.length > 0
+      ? [
+          ...preferredOrder.flatMap((sectionId: string) => {
+            if (sectionId === "custom") {
+              return moduleSections.filter((section) =>
+                section.id.startsWith("custom-")
+              );
+            }
+
+            return moduleSections.filter((section) => section.id === sectionId);
+          }),
+          ...moduleSections.filter((section) => {
+            const sectionKey = section.id.startsWith("custom-")
+              ? "custom"
+              : section.id;
+            return !preferredOrder.includes(sectionKey);
+          }),
+        ]
+      : moduleSections;
+
+  const menuSections = uniqueById([
+    basicSection || {
+      id: "basic",
+      title: locale === "en" ? "Profile" : "基本信息",
+      icon: "👤",
+      enabled: true,
+    },
+    ...orderedModules,
+  ]).map((section, index) => ({
+    ...section,
+    order: index,
+  }));
 
   return {
     ...initialResumeState,
@@ -133,6 +288,8 @@ export const createResumeFromAIResult = (result: any, fileName: string) => {
       }))
       .filter((item: any) => item.name || item.role || item.date || item.description),
     skillContent,
-    customData: {},
+    selfEvaluationContent,
+    menuSections,
+    customData,
   };
 };

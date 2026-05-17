@@ -1,8 +1,9 @@
 import React from "react";
 import { useTranslations } from "@/i18n/compat/client";
-import { Braces, Loader2 } from "lucide-react";
+import { Braces, Loader2, Sparkles } from "lucide-react";
 import { PdfIcon } from "@/components/shared/icons/PdfIcon";
 import { cn } from "@/lib/utils";
+import type { PdfImportProvider } from "@/lib/pdfImport";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +12,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ImportResumeDialogProps {
   open: boolean;
   isImporting: boolean;
   onOpenChange: (open: boolean) => void;
+  pdfProvider: PdfImportProvider;
+  onPdfProviderChange: (provider: PdfImportProvider) => void;
   jsonFileInputRef: React.RefObject<HTMLInputElement>;
   pdfFileInputRef: React.RefObject<HTMLInputElement>;
   onJsonFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -26,6 +36,8 @@ export const ImportResumeDialog = ({
   open,
   isImporting,
   onOpenChange,
+  pdfProvider,
+  onPdfProviderChange,
   jsonFileInputRef,
   pdfFileInputRef,
   onJsonFileChange,
@@ -65,6 +77,32 @@ export const ImportResumeDialog = ({
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Sparkles className="h-4 w-4 text-primary" />
+                {t("dashboard.resumes.importDialog.providerLabel")}
+              </div>
+              <Select
+                value={pdfProvider}
+                onValueChange={(value) =>
+                  onPdfProviderChange(value as PdfImportProvider)
+                }
+                disabled={isImporting}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gemini">
+                    {t("dashboard.resumes.importDialog.providerGemini")}
+                  </SelectItem>
+                  <SelectItem value="openai">
+                    {t("dashboard.resumes.importDialog.providerOpenAI")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <button
               type="button"
               disabled={isImporting}

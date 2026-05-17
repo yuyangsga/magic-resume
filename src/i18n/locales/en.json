@@ -126,11 +126,15 @@
         "jsonTitle": "Import JSON",
         "jsonDescription": "Import an exported resume config file (.json)",
         "pdfTitle": "Import PDF",
-        "pdfDescription": "Use Gemini into structured resume data",
+        "pdfDescription": "Use Gemini or OpenAI to extract structured resume data",
+        "providerLabel": "Recognition model",
+        "providerGemini": "Gemini",
+        "providerOpenAI": "OpenAI",
         "importing": "Importing, please wait...",
         "geminiConfigRequired": "Please configure Gemini API Key and Model ID in AI settings first",
+        "openaiConfigRequired": "Please configure OpenAI API Key, Model ID, and API Endpoint in AI settings first",
         "pdfSuccess": "PDF imported successfully",
-        "pdfError": "PDF import failed. Please check PDF content or Gemini configuration"
+        "pdfError": "PDF import failed. Please check PDF content or AI configuration"
       },
       "notice": {
         "title": "Attention",

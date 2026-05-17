@@ -28,10 +28,50 @@ import {
     toStringArray
 } from "./utils";
 import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
+import type { PdfImportProvider } from "@/lib/pdfImport";
 
 const MAX_PDF_IMPORT_PAGES = 3;
 const PDF_IMAGE_QUALITY = 0.82;
 const PDF_MAX_IMAGE_WIDTH = 1600;
+const PDF_TEXT_LINE_THRESHOLD = 3;
+
+const getPdfPageText = async (page: any) => {
+    const textContent = await page.getTextContent();
+    const textItems = (textContent.items || [])
+        .map((item: any) => ({
+            text: typeof item?.str === "string" ? item.str.trim() : "",
+            x: Number(item?.transform?.[4] || 0),
+            y: Number(item?.transform?.[5] || 0),
+        }))
+        .filter((item: any) => item.text);
+
+    textItems.sort((a: any, b: any) => {
+        if (Math.abs(a.y - b.y) > PDF_TEXT_LINE_THRESHOLD) {
+            return b.y - a.y;
+        }
+
+        return a.x - b.x;
+    });
+
+    const lines: Array<{ y: number; items: string[] }> = [];
+    textItems.forEach((item: any) => {
+        const currentLine = lines[lines.length - 1];
+        if (
+            currentLine &&
+            Math.abs(currentLine.y - item.y) <= PDF_TEXT_LINE_THRESHOLD
+        ) {
+            currentLine.items.push(item.text);
+            return;
+        }
+
+        lines.push({ y: item.y, items: [item.text] });
+    });
+
+    return lines
+        .map((line) => line.items.join(" ").replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+        .join("\n");
+};
 
 export const ResumeWorkbench = () => {
     const t = useTranslations();
@@ -46,12 +86,17 @@ export const ResumeWorkbench = () => {
     const {
         geminiApiKey,
         geminiModelId,
+        openaiApiKey,
+        openaiModelId,
+        openaiApiEndpoint,
+        selectedModel,
     } = useAIConfigStore();
     const router = useRouter();
     const [hasConfiguredFolder, setHasConfiguredFolder] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
+    const [pdfProvider, setPdfProvider] = useState<PdfImportProvider>("gemini");
     const jsonFileInputRef = useRef<HTMLInputElement>(null);
     const pdfFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,6 +115,32 @@ export const ResumeWorkbench = () => {
 
         loadSavedConfig();
     }, []);
+
+    useEffect(() => {
+        const openaiConfigured = !!(openaiApiKey && openaiModelId && openaiApiEndpoint);
+        const geminiConfigured = !!(geminiApiKey && geminiModelId);
+
+        if (selectedModel === "openai" && openaiConfigured) {
+            setPdfProvider("openai");
+            return;
+        }
+
+        if (geminiConfigured) {
+            setPdfProvider("gemini");
+            return;
+        }
+
+        if (openaiConfigured) {
+            setPdfProvider("openai");
+        }
+    }, [
+        geminiApiKey,
+        geminiModelId,
+        openaiApiKey,
+        openaiModelId,
+        openaiApiEndpoint,
+        selectedModel,
+    ]);
 
     const handleCreateFromModal = (templateId: string | null) => {
         const isBlank = !templateId;
@@ -141,7 +212,7 @@ export const ResumeWorkbench = () => {
         router.push(`/app/workbench/${resumeId}`);
     };
 
-    const extractImagesFromPdf = async (file: File) => {
+    const extractPdfImportPayload = async (file: File) => {
         const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
         const buffer = await file.arrayBuffer();
         const typedPdfjs = pdfjs as any;
@@ -153,10 +224,16 @@ export const ResumeWorkbench = () => {
         });
         const pdf = await loadingTask.promise;
         const pageImages: string[] = [];
+        const pageTexts: string[] = [];
         const totalPages = Math.min(pdf.numPages, MAX_PDF_IMPORT_PAGES);
 
         for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
             const page = await pdf.getPage(pageNumber);
+            const pageText = await getPdfPageText(page);
+            if (pageText) {
+                pageTexts.push(`Page ${pageNumber}:\n${pageText}`);
+            }
+
             const baseViewport = page.getViewport({ scale: 2 });
             const widthScale = Math.min(1, PDF_MAX_IMAGE_WIDTH / baseViewport.width);
             const viewport = page.getViewport({ scale: 2 * widthScale });
@@ -182,17 +259,31 @@ export const ResumeWorkbench = () => {
             canvas.height = 0;
         }
 
-        return pageImages;
+        return {
+            images: pageImages,
+            text: pageTexts.join("\n\n"),
+        };
     };
 
     const importResumeFromPdf = async (file: File) => {
-        if (!geminiApiKey || !geminiModelId) {
+        const selectedProvider: PdfImportProvider = pdfProvider;
+        const openaiConfigured = !!(openaiApiKey && openaiModelId && openaiApiEndpoint);
+        const geminiConfigured = !!(geminiApiKey && geminiModelId);
+
+        if (selectedProvider === "openai" && !openaiConfigured) {
+            toast.error(t("dashboard.resumes.importDialog.openaiConfigRequired"));
+            router.push("/app/dashboard/ai");
+            return;
+        }
+
+        if (selectedProvider === "gemini" && !geminiConfigured) {
             toast.error(t("dashboard.resumes.importDialog.geminiConfigRequired"));
             router.push("/app/dashboard/ai");
             return;
         }
 
-        const pdfImages = await extractImagesFromPdf(file);
+        const pdfPayload = await extractPdfImportPayload(file);
+        const pdfImages = pdfPayload.images;
         if (pdfImages.length === 0) {
             throw new Error("No extractable PDF pages");
         }
@@ -203,9 +294,14 @@ export const ResumeWorkbench = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                provider: selectedProvider,
                 images: pdfImages,
-                apiKey: geminiApiKey,
-                model: geminiModelId,
+                apiKey: selectedProvider === "openai" ? openaiApiKey : geminiApiKey,
+                model: selectedProvider === "openai" ? openaiModelId : geminiModelId,
+                apiEndpoint: selectedProvider === "openai" ? openaiApiEndpoint : undefined,
+                content: pdfPayload.text
+                    ? `PDF text extracted for reference:\n\n${pdfPayload.text}`
+                    : undefined,
                 locale,
             }),
         });
@@ -229,7 +325,7 @@ export const ResumeWorkbench = () => {
         }
 
         const nameWithoutExt = file.name.replace(/\.[^.]+$/, "").trim();
-        const resume = createResumeFromAIResult(aiResume, nameWithoutExt);
+        const resume = createResumeFromAIResult(aiResume, nameWithoutExt, locale);
         const resumeId = addResume(resume);
         setActiveResume(resumeId);
         setIsImportDialogOpen(false);
@@ -439,6 +535,8 @@ export const ResumeWorkbench = () => {
                     open={isImportDialogOpen}
                     isImporting={isImporting}
                     onOpenChange={setIsImportDialogOpen}
+                    pdfProvider={pdfProvider}
+                    onPdfProviderChange={setPdfProvider}
                     jsonFileInputRef={jsonFileInputRef}
                     pdfFileInputRef={pdfFileInputRef}
                     onJsonFileChange={handleJsonFileChange}
