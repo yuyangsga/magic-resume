@@ -1,5 +1,22 @@
 export type AIModelType = "doubao" | "deepseek" | "openai" | "gemini";
 
+export const OPENAI_REASONING_EFFORTS = [
+  "none",
+  "minimal",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+] as const;
+
+export type OpenAIReasoningEffort = typeof OPENAI_REASONING_EFFORTS[number];
+
+export const isOpenAIReasoningEffort = (
+  value: unknown
+): value is OpenAIReasoningEffort =>
+  typeof value === "string" &&
+  (OPENAI_REASONING_EFFORTS as readonly string[]).includes(value);
+
 export interface AIValidationContext {
   doubaoApiKey?: string;
   doubaoModelId?: string;
@@ -8,6 +25,7 @@ export interface AIValidationContext {
   openaiApiKey?: string;
   openaiModelId?: string;
   openaiApiEndpoint?: string;
+  openaiReasoningEffort?: string;
   geminiApiKey?: string;
   geminiModelId?: string;
 }
@@ -47,7 +65,13 @@ export const AI_MODEL_CONFIGS: Record<AIModelType, AIModelConfig> = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     }),
-    validate: (context: AIValidationContext) => !!(context.openaiApiKey && context.openaiModelId && context.openaiApiEndpoint),
+    validate: (context: AIValidationContext) =>
+      !!(
+        context.openaiApiKey &&
+        context.openaiModelId &&
+        context.openaiApiEndpoint &&
+        isOpenAIReasoningEffort(context.openaiReasoningEffort)
+      ),
   },
   gemini: {
     url: () => "https://generativelanguage.googleapis.com/v1beta",

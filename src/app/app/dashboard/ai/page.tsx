@@ -3,11 +3,31 @@ import { Check, ExternalLink, Sparkles } from "lucide-react";
 import { useTranslations } from "@/i18n/compat/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DeepSeekLogo from "@/components/ai/icon/IconDeepseek";
 import IconDoubao from "@/components/ai/icon/IconDoubao";
 import { useAIConfigStore } from "@/store/useAIConfigStore";
 import { cn } from "@/lib/utils";
 import IconOpenAi from "@/components/ai/icon/IconOpenAi";
+import {
+  OPENAI_REASONING_EFFORTS,
+  type OpenAIReasoningEffort,
+} from "@/config/ai";
+
+const openAIReasoningEffortLabels: Record<OpenAIReasoningEffort, string> = {
+  none: "none",
+  minimal: "minimal",
+  low: "low",
+  medium: "medium",
+  high: "high",
+  xhigh: "xhigh",
+};
 
 const AISettingsPage = () => {
   const {
@@ -17,6 +37,7 @@ const AISettingsPage = () => {
     openaiApiKey,
     openaiModelId,
     openaiApiEndpoint,
+    openaiReasoningEffort,
     geminiApiKey,
     geminiModelId,
     setDoubaoApiKey,
@@ -25,6 +46,7 @@ const AISettingsPage = () => {
     setOpenaiApiKey,
     setOpenaiModelId,
     setOpenaiApiEndpoint,
+    setOpenaiReasoningEffort,
     setGeminiApiKey,
     setGeminiModelId,
     selectedModel,
@@ -107,7 +129,12 @@ const AISettingsPage = () => {
       link: "https://platform.openai.com/api-keys",
       color: "text-blue-500",
       bgColor: "bg-blue-50 dark:bg-blue-950/50",
-      isConfigured: !!(openaiApiKey && openaiModelId && openaiApiEndpoint),
+      isConfigured: !!(
+        openaiApiKey &&
+        openaiModelId &&
+        openaiApiEndpoint &&
+        openaiReasoningEffort
+      ),
     },
     {
       id: "gemini",
@@ -336,6 +363,46 @@ const AISettingsPage = () => {
                             "focus:ring-2 focus:ring-primary/20"
                           )}
                         />
+                      </div>
+                    )}
+
+                    {model.id === "openai" && (
+                      <div className="space-y-4">
+                        <Label className="text-base font-medium">
+                          {t("dashboard.settings.ai.openai.reasoningEffort")}
+                        </Label>
+                        <Select
+                          value={openaiReasoningEffort || undefined}
+                          onValueChange={(value) =>
+                            setOpenaiReasoningEffort(
+                              value as OpenAIReasoningEffort
+                            )
+                          }
+                        >
+                          <SelectTrigger
+                            className={cn(
+                              "h-11",
+                              "bg-white dark:bg-gray-900",
+                              "border-gray-200 dark:border-gray-800",
+                              "focus:ring-2 focus:ring-primary/20"
+                            )}
+                          >
+                            <SelectValue
+                              placeholder={t(
+                                "dashboard.settings.ai.openai.reasoningEffortPlaceholder"
+                              )}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {OPENAI_REASONING_EFFORTS.map((effort) => (
+                              <SelectItem key={effort} value={effort}>
+                                {t(
+                                  `dashboard.settings.ai.openai.reasoningEffortOptions.${effort}`
+                                ) || openAIReasoningEffortLabels[effort]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
                   </div>

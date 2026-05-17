@@ -89,6 +89,7 @@ export const ResumeWorkbench = () => {
         openaiApiKey,
         openaiModelId,
         openaiApiEndpoint,
+        openaiReasoningEffort,
         selectedModel,
     } = useAIConfigStore();
     const router = useRouter();
@@ -117,7 +118,12 @@ export const ResumeWorkbench = () => {
     }, []);
 
     useEffect(() => {
-        const openaiConfigured = !!(openaiApiKey && openaiModelId && openaiApiEndpoint);
+        const openaiConfigured = !!(
+            openaiApiKey &&
+            openaiModelId &&
+            openaiApiEndpoint &&
+            openaiReasoningEffort
+        );
         const geminiConfigured = !!(geminiApiKey && geminiModelId);
 
         if (selectedModel === "openai" && openaiConfigured) {
@@ -139,6 +145,7 @@ export const ResumeWorkbench = () => {
         openaiApiKey,
         openaiModelId,
         openaiApiEndpoint,
+        openaiReasoningEffort,
         selectedModel,
     ]);
 
@@ -267,7 +274,12 @@ export const ResumeWorkbench = () => {
 
     const importResumeFromPdf = async (file: File) => {
         const selectedProvider: PdfImportProvider = pdfProvider;
-        const openaiConfigured = !!(openaiApiKey && openaiModelId && openaiApiEndpoint);
+        const openaiConfigured = !!(
+            openaiApiKey &&
+            openaiModelId &&
+            openaiApiEndpoint &&
+            openaiReasoningEffort
+        );
         const geminiConfigured = !!(geminiApiKey && geminiModelId);
 
         if (selectedProvider === "openai" && !openaiConfigured) {
@@ -299,6 +311,8 @@ export const ResumeWorkbench = () => {
                 apiKey: selectedProvider === "openai" ? openaiApiKey : geminiApiKey,
                 model: selectedProvider === "openai" ? openaiModelId : geminiModelId,
                 apiEndpoint: selectedProvider === "openai" ? openaiApiEndpoint : undefined,
+                reasoningEffort:
+                    selectedProvider === "openai" ? openaiReasoningEffort : undefined,
                 content: pdfPayload.text
                     ? `PDF text extracted for reference:\n\n${pdfPayload.text}`
                     : undefined,

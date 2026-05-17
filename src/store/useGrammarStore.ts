@@ -99,6 +99,7 @@ export const useGrammarStore = create<GrammarStore>((set, get) => ({
       openaiApiKey,
       openaiModelId,
       openaiApiEndpoint,
+      openaiReasoningEffort,
       geminiApiKey,
       geminiModelId
     } = useAIConfigStore.getState();
@@ -135,6 +136,8 @@ export const useGrammarStore = create<GrammarStore>((set, get) => ({
           model: config.requiresModelId ? modelId : config.defaultModel,
           modelType: selectedModel,
           apiEndpoint: selectedModel === "openai" ? openaiApiEndpoint : undefined,
+          reasoningEffort:
+            selectedModel === "openai" ? openaiReasoningEffort : undefined,
         }),
       });
 

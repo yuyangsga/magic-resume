@@ -61,6 +61,7 @@ export default function AIPolishDialog({
     openaiApiKey,
     openaiModelId,
     openaiApiEndpoint,
+    openaiReasoningEffort,
     geminiApiKey,
     geminiModelId,
     isConfigured
@@ -150,6 +151,8 @@ export default function AIPolishDialog({
           content: turndownService.turndown(content),
           apiKey,
           apiEndpoint: selectedModel === "openai" ? openaiApiEndpoint : undefined,
+          reasoningEffort:
+            selectedModel === "openai" ? openaiReasoningEffort : undefined,
           model: config.requiresModelId ? modelId : config.defaultModel,
           modelType: selectedModel,
           customInstructions: customInstructions.trim() || undefined

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AIModelType, AI_MODEL_CONFIGS } from "@/config/ai";
+import { AIModelType, AI_MODEL_CONFIGS, isOpenAIReasoningEffort } from "@/config/ai";
 import { formatGeminiErrorMessage, getGeminiModelInstance } from "@/lib/server/gemini";
+import { addOpenAIReasoningEffort } from "@/lib/openai";
 
 const parseUpstreamError = (raw: string, fallback: string) => {
   if (!raw) return { message: fallback };
@@ -24,13 +25,14 @@ export const Route = createFileRoute("/api/polish")({
       POST: async ({ request }) => {
         try {
           const body = await request.json();
-          const { apiKey, model, content, modelType, apiEndpoint, customInstructions } = body as {
+          const { apiKey, model, content, modelType, apiEndpoint, customInstructions, reasoningEffort } = body as {
             apiKey: string;
             model: string;
             content: string;
             modelType: AIModelType;
             apiEndpoint?: string;
             customInstructions?: string;
+            reasoningEffort?: string;
           };
 
           const modelConfig = AI_MODEL_CONFIGS[modelType as AIModelType];
@@ -100,23 +102,54 @@ export const Route = createFileRoute("/api/polish")({
             });
           }
 
+          if (modelType === "openai" && !isOpenAIReasoningEffort(reasoningEffort)) {
+            return Response.json(
+              { error: { message: "Missing or invalid OpenAI reasoning effort" } },
+              { status: 400 }
+            );
+          }
+
           const response = await fetch(modelConfig.url(apiEndpoint), {
             method: "POST",
             headers: modelConfig.headers(apiKey),
-            body: JSON.stringify({
-              model: modelConfig.requiresModelId ? model : modelConfig.defaultModel,
-              messages: [
-                {
-                  role: "system",
-                  content: systemPrompt
-                },
-                {
-                  role: "user",
-                  content
-                }
-              ],
-              stream: true
-            })
+            body: JSON.stringify(
+              modelType === "openai"
+                ? addOpenAIReasoningEffort(
+                    {
+                      model: modelConfig.requiresModelId
+                        ? model
+                        : modelConfig.defaultModel,
+                      messages: [
+                        {
+                          role: "system",
+                          content: systemPrompt,
+                        },
+                        {
+                          role: "user",
+                          content,
+                        },
+                      ],
+                      stream: true,
+                    },
+                    reasoningEffort
+                  )
+                : {
+                    model: modelConfig.requiresModelId
+                      ? model
+                      : modelConfig.defaultModel,
+                    messages: [
+                      {
+                        role: "system",
+                        content: systemPrompt,
+                      },
+                      {
+                        role: "user",
+                        content,
+                      },
+                    ],
+                    stream: true,
+                  }
+            )
           });
 
           if (!response.ok) {

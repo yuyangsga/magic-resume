@@ -1,4 +1,5 @@
 import type { AIModelType } from "@/config/ai";
+import { addOpenAIReasoningEffort } from "@/lib/openai";
 
 export type PdfImportProvider = "gemini" | "openai";
 
@@ -7,6 +8,7 @@ export interface PdfImportConfig {
   openaiApiKey?: string;
   openaiModelId?: string;
   openaiApiEndpoint?: string;
+  openaiReasoningEffort?: string;
   geminiApiKey?: string;
   geminiModelId?: string;
 }
@@ -18,7 +20,8 @@ export const resolvePdfImportProvider = (
     config.selectedModel === "openai" &&
     config.openaiApiKey &&
     config.openaiModelId &&
-    config.openaiApiEndpoint
+    config.openaiApiEndpoint &&
+    config.openaiReasoningEffort
   ) {
     return "openai";
   }
@@ -30,7 +33,8 @@ export const resolvePdfImportProvider = (
   if (
     config.openaiApiKey &&
     config.openaiModelId &&
-    config.openaiApiEndpoint
+    config.openaiApiEndpoint &&
+    config.openaiReasoningEffort
   ) {
     return "openai";
   }
@@ -78,6 +82,7 @@ export const normalizePdfImages = (images?: string[]) =>
 
 export const buildOpenAIPdfImportRequestBody = (params: {
   model: string;
+  reasoningEffort: string;
   systemInstruction: string;
   content: string;
   images: string[];
@@ -90,30 +95,33 @@ export const buildOpenAIPdfImportRequestBody = (params: {
     },
   }));
 
-  return {
-    model: params.model,
-    response_format: {
-      type: "json_object" as const,
+  return addOpenAIReasoningEffort(
+    {
+      model: params.model,
+      response_format: {
+        type: "json_object" as const,
+      },
+      messages: [
+        {
+          role: "system" as const,
+          content: params.systemInstruction,
+        },
+        {
+          role: "user" as const,
+          content: [
+            {
+              type: "text" as const,
+              text:
+                params.content ||
+                "Please identify the information in the resume pages below and output strictly according to the JSON structure.",
+            },
+            ...imageParts,
+          ],
+        },
+      ],
     },
-    messages: [
-      {
-        role: "system" as const,
-        content: params.systemInstruction,
-      },
-      {
-        role: "user" as const,
-        content: [
-          {
-            type: "text" as const,
-            text:
-              params.content ||
-              "Please identify the information in the resume pages below and output strictly according to the JSON structure.",
-          },
-          ...imageParts,
-        ],
-      },
-    ],
-  };
+    params.reasoningEffort
+  );
 };
 
 export const buildGeminiPdfImportInput = (params: {

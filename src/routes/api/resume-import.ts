@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AI_MODEL_CONFIGS } from "@/config/ai";
+import { AI_MODEL_CONFIGS, isOpenAIReasoningEffort } from "@/config/ai";
 import {
   buildGeminiPdfImportInput,
   buildOpenAIPdfImportRequestBody,
@@ -162,6 +162,7 @@ export const Route = createFileRoute("/api/resume-import")({
             images,
             locale,
             apiEndpoint,
+            reasoningEffort,
           } = body as {
             provider: PdfImportProvider;
             apiKey: string;
@@ -170,6 +171,7 @@ export const Route = createFileRoute("/api/resume-import")({
             images?: string[];
             locale?: string;
             apiEndpoint?: string;
+            reasoningEffort?: string;
           };
 
           if (
@@ -196,9 +198,9 @@ export const Route = createFileRoute("/api/resume-import")({
           const systemInstruction = buildSystemInstruction(language);
 
           if (provider === "openai") {
-            if (!apiEndpoint || !model) {
+            if (!apiEndpoint || !model || !isOpenAIReasoningEffort(reasoningEffort)) {
               return Response.json(
-                { error: "Missing OpenAI API endpoint or model" },
+                { error: "Missing or invalid OpenAI API endpoint, model or reasoning effort" },
                 { status: 400 }
               );
             }
@@ -212,6 +214,7 @@ export const Route = createFileRoute("/api/resume-import")({
                   model: getPdfImportModel("openai", {
                     openaiModelId: model,
                   }),
+                  reasoningEffort,
                   systemInstruction,
                   content: prompt,
                   images: pdfImages,
