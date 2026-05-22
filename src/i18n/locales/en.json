@@ -784,6 +784,77 @@
   "templates": {
     "switchTemplate": "Switch Template"
   },
+  "jobMatch": {
+    "entry": "Job Match",
+    "title": "JD Match",
+    "description": "Compare the current resume with a target job and apply AI rewrite suggestions one by one.",
+    "target": {
+      "title": "Target job",
+      "jobTitle": "Job title",
+      "jobTitlePlaceholder": "Frontend Engineer",
+      "company": "Company",
+      "companyPlaceholder": "Optional",
+      "jd": "Job description",
+      "jdPlaceholder": "Paste the full job description here...",
+      "saved": "Target and latest analysis are saved with this resume.",
+      "notSaved": "Paste a JD and run analysis to save the target."
+    },
+    "actions": {
+      "save": "Save target",
+      "match": "Analyze match",
+      "matching": "Analyzing...",
+      "apply": "Apply",
+      "ignore": "Ignore"
+    },
+    "error": {
+      "configRequired": "Please configure an AI provider first.",
+      "configure": "Go to settings",
+      "jdRequired": "Please paste a job description first.",
+      "matchFailed": "Job match failed",
+      "applyFailed": "Original text was not found, so this suggestion cannot be applied automatically."
+    },
+    "success": {
+      "matched": "Job match analysis completed",
+      "applied": "Suggestion applied"
+    },
+    "empty": {
+      "title": "No analysis yet",
+      "description": "Paste a JD and run analysis to see score, gaps, keywords, and rewrite suggestions."
+    },
+    "result": {
+      "score": "Match score",
+      "strengths": "Strengths",
+      "gaps": "Gaps",
+      "keywords": "Keyword coverage",
+      "noKeywords": "No keyword coverage returned."
+    },
+    "keywordStatus": {
+      "matched": "matched",
+      "weak": "weak",
+      "missing": "missing"
+    },
+    "suggestions": {
+      "title": "Rewrite suggestions",
+      "count": "{count} remaining",
+      "original": "Original",
+      "suggested": "Suggested",
+      "empty": "No remaining suggestions."
+    },
+    "sections": {
+      "basic": "Basic",
+      "selfEvaluation": "Summary",
+      "skills": "Skills",
+      "experience": "Experience",
+      "projects": "Projects",
+      "education": "Education",
+      "custom": "Custom"
+    },
+    "impact": {
+      "high": "High impact",
+      "medium": "Medium impact",
+      "low": "Low impact"
+    }
+  },
   "themeModal": {
     "delete": {
       "title": "Confirm Deletion",

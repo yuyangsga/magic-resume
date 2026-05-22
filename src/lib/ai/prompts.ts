@@ -1,6 +1,7 @@
 export const POLISH_PROMPT_VERSION = "polish-v2";
 export const GRAMMAR_PROMPT_VERSION = "grammar-v2";
 export const RESUME_IMPORT_PROMPT_VERSION = "resume-import-v2";
+export const JOB_MATCH_PROMPT_VERSION = "job-match-v1";
 
 export const buildPolishSystemPrompt = (customInstructions?: string) => {
   let systemPrompt = `你是一个专业的简历优化助手。请帮助优化以下 Markdown 格式的文本，使其更加专业和有吸引力。
@@ -138,3 +139,47 @@ JSON structure:
 export const DEFAULT_RESUME_IMPORT_PROMPT =
   "Please identify the information in the resume pages below and output strictly according to the JSON structure.";
 
+export const buildJobMatchSystemPrompt = (language: string) =>
+  `You are a senior resume strategist. Analyze how well the resume matches the target job description and return only one valid JSON object.
+
+Output language: ${language}
+
+Rules:
+1. Only output JSON. Do not include Markdown fences or explanations.
+2. Base every finding on the supplied resume and job description.
+3. Do not invent work experience, employers, education, credentials, metrics, or skills.
+4. Suggestions must be practical edits to existing resume content.
+5. Each suggestion must include the exact original text if it can be found in the resume.
+6. Prefer high-impact resume sections: self evaluation, skills, experience, projects, education, custom.
+7. If a suggestion cannot safely map to a section, omit it.
+8. Keep suggestedText concise and resume-ready. HTML is allowed only for simple rich text lists or paragraphs.
+
+JSON structure:
+{
+  "score": 0,
+  "summary": "",
+  "strengths": ["", ""],
+  "gaps": ["", ""],
+  "keywords": [
+    {
+      "keyword": "",
+      "status": "matched",
+      "evidence": ""
+    }
+  ],
+  "suggestions": [
+    {
+      "id": "",
+      "sectionId": "experience",
+      "targetId": "",
+      "originalText": "",
+      "suggestedText": "",
+      "reason": "",
+      "impact": "high"
+    }
+  ]
+}
+
+Allowed keyword status values: matched, missing, weak.
+Allowed sectionId values: basic, selfEvaluation, skills, experience, projects, education, custom.
+Allowed impact values: high, medium, low.`;

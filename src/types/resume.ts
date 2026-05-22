@@ -125,6 +125,52 @@ export interface Certificate {
   width: number; // Width percentage to support flex layouts
 }
 
+export type AIJobMatchSectionId =
+  | "basic"
+  | "selfEvaluation"
+  | "skills"
+  | "experience"
+  | "projects"
+  | "education"
+  | "custom";
+
+export type AIJobMatchKeywordStatus = "matched" | "missing" | "weak";
+
+export type AIJobMatchSuggestionImpact = "high" | "medium" | "low";
+
+export interface AIJobMatchKeyword {
+  keyword: string;
+  status: AIJobMatchKeywordStatus;
+  evidence?: string;
+}
+
+export interface AIJobMatchSuggestion {
+  id: string;
+  sectionId: AIJobMatchSectionId;
+  targetId?: string;
+  originalText: string;
+  suggestedText: string;
+  reason: string;
+  impact: AIJobMatchSuggestionImpact;
+}
+
+export interface AIJobMatchResult {
+  score: number;
+  summary: string;
+  strengths: string[];
+  gaps: string[];
+  keywords: AIJobMatchKeyword[];
+  suggestions: AIJobMatchSuggestion[];
+}
+
+export interface ResumeJobTarget {
+  title: string;
+  company: string;
+  jdText: string;
+  updatedAt: string;
+  latestAnalysis?: AIJobMatchResult;
+}
+
 export type GlobalSettings = {
   themeColor?: string | undefined;
   fontFamily?: string | undefined;
@@ -193,6 +239,7 @@ export interface ResumeData {
   customData: Record<string, CustomItem[]>;
   skillContent: string;
   selfEvaluationContent: string;
+  jobTarget?: ResumeJobTarget;
   activeSection: string;
   draggingProjectId: string | null;
   menuSections: MenuSection[];

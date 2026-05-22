@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "@/i18n/compat/client";
-import { AlertCircle, ShieldCheck, ShieldAlert, Edit2 } from "lucide-react";
+import { AlertCircle, ShieldCheck, ShieldAlert, Edit2, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "@/lib/navigation";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { GrammarCheckDrawer } from "./grammar/GrammarCheckDrawer";
+import { JobMatchDrawer } from "./job-match/JobMatchDrawer";
 import { getFileHandle, getConfig } from "@/utils/fileSystem";
 
 interface EditorHeaderProps {
@@ -42,6 +43,7 @@ export function EditorHeader({ isMobile }: EditorHeaderProps) {
 
   const [backupConfigured, setBackupConfigured] = useState<boolean | null>(null);
   const [backupPath, setBackupPath] = useState<string>("");
+  const [jobMatchOpen, setJobMatchOpen] = useState(false);
 
   useEffect(() => {
     const checkBackup = async () => {
@@ -150,6 +152,16 @@ export function EditorHeader({ isMobile }: EditorHeaderProps) {
 
         <div className="flex items-center space-x-3">
           <GrammarCheckDrawer />
+          <JobMatchDrawer open={jobMatchOpen} onOpenChange={setJobMatchOpen} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden md:inline-flex h-8 gap-1.5"
+            onClick={() => setJobMatchOpen(true)}
+          >
+            <Target className="h-4 w-4" />
+            {t("jobMatch.entry")}
+          </Button>
           {errors.length > 0 && (
              <div 
                 className="flex items-center space-x-1 cursor-pointer animate-pulse"

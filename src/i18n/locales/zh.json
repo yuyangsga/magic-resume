@@ -786,6 +786,77 @@
   "templates": {
     "switchTemplate": "切换模板"
   },
+  "jobMatch": {
+    "entry": "岗位匹配",
+    "title": "JD 岗位匹配",
+    "description": "将当前简历与目标岗位 JD 对比，并逐条应用 AI 改写建议。",
+    "target": {
+      "title": "目标岗位",
+      "jobTitle": "岗位名称",
+      "jobTitlePlaceholder": "前端工程师",
+      "company": "公司",
+      "companyPlaceholder": "可选",
+      "jd": "岗位 JD",
+      "jdPlaceholder": "在这里粘贴完整岗位描述...",
+      "saved": "目标岗位和最近一次分析已随当前简历保存。",
+      "notSaved": "粘贴 JD 并开始分析后会保存岗位目标。"
+    },
+    "actions": {
+      "save": "保存目标",
+      "match": "分析匹配度",
+      "matching": "分析中...",
+      "apply": "应用",
+      "ignore": "忽略"
+    },
+    "error": {
+      "configRequired": "请先配置 AI 服务商。",
+      "configure": "前往设置",
+      "jdRequired": "请先粘贴岗位 JD。",
+      "matchFailed": "岗位匹配失败",
+      "applyFailed": "未找到原文，无法自动应用该建议。"
+    },
+    "success": {
+      "matched": "岗位匹配分析完成",
+      "applied": "建议已应用"
+    },
+    "empty": {
+      "title": "还没有分析结果",
+      "description": "粘贴 JD 后开始分析，即可查看匹配分、差距、关键词和改写建议。"
+    },
+    "result": {
+      "score": "匹配分",
+      "strengths": "优势",
+      "gaps": "差距",
+      "keywords": "关键词覆盖",
+      "noKeywords": "模型未返回关键词覆盖。"
+    },
+    "keywordStatus": {
+      "matched": "已覆盖",
+      "weak": "较弱",
+      "missing": "缺失"
+    },
+    "suggestions": {
+      "title": "改写建议",
+      "count": "剩余 {count} 条",
+      "original": "原文",
+      "suggested": "建议",
+      "empty": "没有剩余建议。"
+    },
+    "sections": {
+      "basic": "基本信息",
+      "selfEvaluation": "自我评价",
+      "skills": "技能",
+      "experience": "工作经历",
+      "projects": "项目经历",
+      "education": "教育经历",
+      "custom": "自定义"
+    },
+    "impact": {
+      "high": "高影响",
+      "medium": "中影响",
+      "low": "低影响"
+    }
+  },
   "themeModal": {
     "delete": {
       "title": "确定要删除吗",

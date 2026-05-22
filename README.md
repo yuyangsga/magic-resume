@@ -30,6 +30,7 @@ Magic Resume is a modern online resume editor that makes creating professional r
 - 🔄 Real-time preview
 - 💾 Auto-save
 - 🔒 Local storage
+- 🎯 JD matching and AI rewrite suggestions
 
 ## Recent Improvements
 
@@ -41,6 +42,7 @@ Magic Resume is a modern online resume editor that makes creating professional r
 - Removed the `DEFAULT_TEMPLATES` circular re-export to eliminate Vite/Rollup circular chunk warnings.
 - Added a shared rich text sanitizer for rendered resume HTML and imported resume content.
 - Cleaned up Next migration leftovers and added local File System Access API types for stricter TypeScript checks.
+- Added a local-first JD matching workflow with match score, keyword coverage, and applicable AI rewrite suggestions.
 
 ## 🛠️ Tech Stack
 
@@ -113,6 +115,7 @@ Please see the [LICENSE](LICENSE) file for detailed terms.
 ## 🗺️ Roadmap
 
 - [x] AI-assisted writing
+- [x] JD matching and AI rewrite suggestions
 - [x] Multi-language support
 - [ ] Support for more resume templates
 - [ ] Support for more export formats
