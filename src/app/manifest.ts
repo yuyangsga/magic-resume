@@ -1,12 +1,25 @@
-import type { MetadataRoute } from "next";
+type WebManifestIcon = {
+  src: string;
+  sizes: string;
+  type: string;
+};
 
-export const runtime = "edge";
+type WebManifest = {
+  name: string;
+  short_name: string;
+  description: string;
+  start_url: string;
+  display: "standalone";
+  background_color: string;
+  theme_color: string;
+  icons: WebManifestIcon[];
+};
 
-export default function manifest(): MetadataRoute.Manifest {
+export default function manifest(): WebManifest {
   return {
     name: "Magic Resume",
     short_name: "Magic Resume",
-    description: "A Progressive Web App built with Next.js",
+    description: "Magic Resume progressive web app",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

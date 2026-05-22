@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import {
   hasMeaningfulRichTextContent,
   normalizeLinkHref,
+  sanitizeRichTextContent,
   stripLegacyRichTextClasses,
   stripTrailingListParagraph,
 } from "@/lib/richText";
@@ -58,7 +59,9 @@ interface ColorOption {
 }
 
 const normalizeEditorHtml = (value?: string) =>
-  stripTrailingListParagraph(stripLegacyRichTextClasses(value));
+  sanitizeRichTextContent(
+    stripTrailingListParagraph(stripLegacyRichTextClasses(value))
+  );
 
 const getColors = (t: any): ColorOption[] => [
   { label: t("colors.black"), value: "#000000" },

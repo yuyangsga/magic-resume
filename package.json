@@ -9,6 +9,8 @@
     "build": "vite build",
     "start": "node server.mjs",
     "preview": "vite preview",
+    "test": "tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
     "release": "bumpp",
     "generate:template-snapshots": "tsx scripts/generate-template-snapshots.ts",
     "install:playwright": "playwright install chromium"

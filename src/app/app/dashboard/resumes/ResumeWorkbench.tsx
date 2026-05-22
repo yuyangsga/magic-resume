@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { getConfig, getFileHandle } from "@/utils/fileSystem";
 import { useResumeStore } from "@/store/useResumeStore";
 import { useAIConfigStore } from "@/store/useAIConfigStore";
-import { DEFAULT_TEMPLATES } from "@/config";
+import { DEFAULT_TEMPLATES } from "@/components/templates/registry";
 import { CreateResumeModal } from "./CreateResumeModal";
 import { ImportResumeDialog } from "./ImportResumeDialog";
 import { ResumeCardItem } from "./ResumeCardItem";
@@ -90,6 +90,7 @@ export const ResumeWorkbench = () => {
         openaiModelId,
         openaiApiEndpoint,
         openaiReasoningEffort,
+        openaiReasoningEnabled,
         selectedModel,
     } = useAIConfigStore();
     const router = useRouter();
@@ -122,7 +123,7 @@ export const ResumeWorkbench = () => {
             openaiApiKey &&
             openaiModelId &&
             openaiApiEndpoint &&
-            openaiReasoningEffort
+            (openaiReasoningEnabled === false || openaiReasoningEffort)
         );
         const geminiConfigured = !!(geminiApiKey && geminiModelId);
 
@@ -146,6 +147,7 @@ export const ResumeWorkbench = () => {
         openaiModelId,
         openaiApiEndpoint,
         openaiReasoningEffort,
+        openaiReasoningEnabled,
         selectedModel,
     ]);
 
@@ -278,7 +280,7 @@ export const ResumeWorkbench = () => {
             openaiApiKey &&
             openaiModelId &&
             openaiApiEndpoint &&
-            openaiReasoningEffort
+            (openaiReasoningEnabled === false || openaiReasoningEffort)
         );
         const geminiConfigured = !!(geminiApiKey && geminiModelId);
 
@@ -313,6 +315,8 @@ export const ResumeWorkbench = () => {
                 apiEndpoint: selectedProvider === "openai" ? openaiApiEndpoint : undefined,
                 reasoningEffort:
                     selectedProvider === "openai" ? openaiReasoningEffort : undefined,
+                reasoningEnabled:
+                    selectedProvider === "openai" ? openaiReasoningEnabled : undefined,
                 content: pdfPayload.text
                     ? `PDF text extracted for reference:\n\n${pdfPayload.text}`
                     : undefined,

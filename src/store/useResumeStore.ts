@@ -12,7 +12,7 @@ import {
   MenuSection,
   Certificate,
 } from "../types/resume";
-import { DEFAULT_TEMPLATES } from "@/config";
+import { DEFAULT_TEMPLATES } from "@/components/templates/registry";
 import {
   initialResumeState,
   initialResumeStateEn,
@@ -20,6 +20,98 @@ import {
   blankResumeStateEn,
 } from "@/config/initialResumeData";
 import { generateUUID } from "@/utils/uuid";
+import { sanitizeRichTextContent } from "@/lib/richText";
+
+const sanitizeResumeRichText = (resume: ResumeData): ResumeData => {
+  const customData = Object.fromEntries(
+    Object.entries(resume.customData ?? {}).map(([sectionId, items]) => [
+      sectionId,
+      Array.isArray(items)
+        ? items.map((item) => ({
+            ...item,
+            description: sanitizeRichTextContent(item.description),
+          }))
+        : [],
+    ])
+  );
+
+  return {
+    ...resume,
+    education: Array.isArray(resume.education)
+      ? resume.education.map((item) => ({
+          ...item,
+          description: sanitizeRichTextContent(item.description),
+        }))
+      : [],
+    experience: Array.isArray(resume.experience)
+      ? resume.experience.map((item) => ({
+          ...item,
+          details: sanitizeRichTextContent(item.details),
+        }))
+      : [],
+    projects: Array.isArray(resume.projects)
+      ? resume.projects.map((item) => ({
+          ...item,
+          description: sanitizeRichTextContent(item.description),
+        }))
+      : [],
+    customData,
+    skillContent: sanitizeRichTextContent(resume.skillContent),
+    selfEvaluationContent: sanitizeRichTextContent(resume.selfEvaluationContent),
+  };
+};
+
+const sanitizeResumePatch = (data: Partial<ResumeData>): Partial<ResumeData> => {
+  const patched = { ...data };
+
+  if (typeof patched.skillContent === "string") {
+    patched.skillContent = sanitizeRichTextContent(patched.skillContent);
+  }
+
+  if (typeof patched.selfEvaluationContent === "string") {
+    patched.selfEvaluationContent = sanitizeRichTextContent(
+      patched.selfEvaluationContent
+    );
+  }
+
+  if (Array.isArray(patched.education)) {
+    patched.education = patched.education.map((item) => ({
+      ...item,
+      description: sanitizeRichTextContent(item.description),
+    }));
+  }
+
+  if (Array.isArray(patched.experience)) {
+    patched.experience = patched.experience.map((item) => ({
+      ...item,
+      details: sanitizeRichTextContent(item.details),
+    }));
+  }
+
+  if (Array.isArray(patched.projects)) {
+    patched.projects = patched.projects.map((item) => ({
+      ...item,
+      description: sanitizeRichTextContent(item.description),
+    }));
+  }
+
+  if (patched.customData) {
+    patched.customData = Object.fromEntries(
+      Object.entries(patched.customData).map(([sectionId, items]) => [
+        sectionId,
+        Array.isArray(items)
+          ? items.map((item) => ({
+              ...item,
+              description: sanitizeRichTextContent(item.description),
+            }))
+          : [],
+      ])
+    );
+  }
+
+  return patched;
+};
+
 interface ResumeStore {
   resumes: Record<string, ResumeData>;
   activeResumeId: string | null;
@@ -197,7 +289,7 @@ const debouncedSyncToFile = (
 };
 
 export const useResumeStore = create(
-  persist<ResumeStore>(
+  persist<ResumeStore, [], [], PersistedResumeStore>(
     (set, get) => ({
       resumes: {},
       activeResumeId: null,
@@ -257,11 +349,11 @@ export const useResumeStore = create(
           const resume = state.resumes[resumeId];
           if (!resume) return state;
 
-          const updatedResume = {
+          const updatedResume = sanitizeResumeRichText({
             ...resume,
-            ...data,
+            ...sanitizeResumePatch(data),
             updatedAt: new Date().toISOString(),
-          };
+          });
 
           debouncedSyncToFile(updatedResume, resume);
 
@@ -285,7 +377,9 @@ export const useResumeStore = create(
           return false;
         }
 
-        const importedResume = normalizeImportedResume(resume, sourceModifiedAt);
+        const importedResume = sanitizeResumeRichText(
+          normalizeImportedResume(resume, sourceModifiedAt)
+        );
 
         set((state) => ({
           resumes: {
@@ -773,17 +867,19 @@ export const useResumeStore = create(
         debouncedSyncToFile(updatedResume);
       },
       addResume: (resume: ResumeData) => {
+        const sanitizedResume = sanitizeResumeRichText(resume);
+
         set((state) => ({
           resumes: {
             ...state.resumes,
-            [resume.id]: resume,
+            [sanitizedResume.id]: sanitizedResume,
           },
-          activeResumeId: resume.id,
-          activeResume: resume,
+          activeResumeId: sanitizedResume.id,
+          activeResume: sanitizedResume,
         }));
 
-        syncResumeToFile(resume);
-        return resume.id;
+        syncResumeToFile(sanitizedResume);
+        return sanitizedResume.id;
       },
     }),
     {

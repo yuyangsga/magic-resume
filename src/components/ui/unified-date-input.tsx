@@ -1,8 +1,13 @@
 
-import { DateInput } from "@heroui/date-input";
+import { DateInput, type DateInputValue } from "@heroui/date-input";
 import { HeroUIProvider } from "@heroui/react";
-import { CalendarDate, parseDate } from "@internationalized/date";
-import { useState, useEffect } from "react";
+import { parseDate } from "@internationalized/date";
+import {
+  useState,
+  useEffect,
+  type ComponentProps,
+  type ComponentType,
+} from "react";
 import { cn } from "@/lib/utils";
 
 interface UnifiedDateInputProps {
@@ -14,6 +19,16 @@ interface UnifiedDateInputProps {
   className?: string;
 }
 
+type DateInputCompatProps = Omit<
+  ComponentProps<typeof DateInput>,
+  "value" | "onChange"
+> & {
+  value?: DateInputValue | null;
+  onChange?: (value: DateInputValue | null) => void;
+};
+
+const DateInputCompat = DateInput as unknown as ComponentType<DateInputCompatProps>;
+
 export function UnifiedDateInput({
   value,
   onChange,
@@ -21,12 +36,12 @@ export function UnifiedDateInput({
   isRequired,
   className,
 }: UnifiedDateInputProps) {
-  const parseValue = (input: string): CalendarDate | null => {
+  const parseValue = (input: string): DateInputValue | null => {
     if (!input) return null;
     try {
       let normalized = input.replace(/[./]/g, "-");
       if (normalized.length === 7) normalized = `${normalized}-01`;
-      return parseDate(normalized);
+      return parseDate(normalized) as unknown as DateInputValue;
     } catch {
       return null;
     }
@@ -34,7 +49,7 @@ export function UnifiedDateInput({
 
   const isPresent = value === "至今" || value === "Present" || value.includes("Present") || value.includes("至今");
 
-  const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(() =>
+  const [selectedDate, setSelectedDate] = useState<DateInputValue | null>(() =>
     parseValue(value)
   );
 
@@ -42,7 +57,7 @@ export function UnifiedDateInput({
     setSelectedDate(parseValue(value));
   }, [value]);
 
-  const handleDateChange = (date: CalendarDate | null) => {
+  const handleDateChange = (date: DateInputValue | null) => {
     setSelectedDate(date);
     if (!date) {
       onChange("");
@@ -55,7 +70,7 @@ export function UnifiedDateInput({
   return (
     <div className={className}>
       <HeroUIProvider locale="ja-JP">
-        <DateInput
+        <DateInputCompat
           value={isPresent ? null : selectedDate}
           onChange={handleDateChange}
           isRequired={isRequired}

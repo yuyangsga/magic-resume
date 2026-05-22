@@ -16,6 +16,7 @@ interface AIConfigState {
   openaiModelId: string;
   openaiApiEndpoint: string;
   openaiReasoningEffort: OpenAIReasoningEffort | "";
+  openaiReasoningEnabled: boolean;
   geminiApiKey: string;
   geminiModelId: string;
   setSelectedModel: (model: AIModelType) => void;
@@ -27,6 +28,7 @@ interface AIConfigState {
   setOpenaiModelId: (modelId: string) => void;
   setOpenaiApiEndpoint: (endpoint: string) => void;
   setOpenaiReasoningEffort: (effort: OpenAIReasoningEffort | "") => void;
+  setOpenaiReasoningEnabled: (enabled: boolean) => void;
   setGeminiApiKey: (apiKey: string) => void;
   setGeminiModelId: (modelId: string) => void;
   isConfigured: () => boolean;
@@ -44,6 +46,7 @@ export const useAIConfigStore = create<AIConfigState>()(
       openaiModelId: "",
       openaiApiEndpoint: "",
       openaiReasoningEffort: "",
+      openaiReasoningEnabled: true,
       geminiApiKey: "",
       geminiModelId: "gemini-flash-latest",
       setSelectedModel: (model: AIModelType) => set({ selectedModel: model }),
@@ -56,6 +59,8 @@ export const useAIConfigStore = create<AIConfigState>()(
       setOpenaiApiEndpoint: (endpoint: string) => set({ openaiApiEndpoint: endpoint }),
       setOpenaiReasoningEffort: (effort: OpenAIReasoningEffort | "") =>
         set({ openaiReasoningEffort: effort }),
+      setOpenaiReasoningEnabled: (enabled: boolean) =>
+        set({ openaiReasoningEnabled: enabled }),
       setGeminiApiKey: (apiKey: string) => set({ geminiApiKey: apiKey }),
       setGeminiModelId: (modelId: string) => set({ geminiModelId: modelId }),
       isConfigured: () => {

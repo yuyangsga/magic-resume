@@ -1,6 +1,7 @@
 import { generateUUID } from "@/utils/uuid";
 import { initialResumeState } from "@/config/initialResumeData";
-import { DEFAULT_TEMPLATES } from "@/config";
+import { DEFAULT_TEMPLATES } from "@/components/templates/registry";
+import { sanitizeRichTextContent } from "@/lib/richText";
 
 export const escapeHtml = (value: string) =>
   value
@@ -11,7 +12,7 @@ export const escapeHtml = (value: string) =>
 export const toString = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
 
-export const toStringArray = (value: unknown) => {
+export const toStringArray = (value: unknown): string[] => {
   if (Array.isArray(value)) {
     return value
       .flatMap((item) =>
@@ -27,22 +28,24 @@ export const toStringArray = (value: unknown) => {
       .filter(Boolean);
   }
 
-  return [] as string[];
+  return [];
 };
 
 export const toListHtml = (value: unknown) => {
   const items = toStringArray(value);
   if (items.length === 0) return "";
-  return `<ul>${items
+  return sanitizeRichTextContent(`<ul>${items
     .map((item) => `<li>${escapeHtml(item)}</li>`)
-    .join("")}</ul>`;
+    .join("")}</ul>`);
 };
 
 export const toParagraphHtml = (value: unknown) => {
   const items = toStringArray(value);
   if (items.length === 0) return "";
 
-  return items.map((item) => `<p>${escapeHtml(item)}</p>`).join("");
+  return sanitizeRichTextContent(
+    items.map((item) => `<p>${escapeHtml(item)}</p>`).join("")
+  );
 };
 
 const normalizeSectionId = (value: unknown) => {
@@ -126,11 +129,18 @@ export const createResumeFromAIResult = (
         description: toListHtml(item?.description || item?.details),
         visible: true,
       }))
-      .filter((item: any) => item.title || item.subtitle || item.dateRange || item.description);
+      .filter(
+        (item: {
+          title: string;
+          subtitle: string;
+          dateRange: string;
+          description: string;
+        }) => item.title || item.subtitle || item.dateRange || item.description
+      );
   });
 
   if (certificates.length > 0 && !customSections.length) {
-    customData["custom-1"] = certificates.map((certificate) => ({
+    customData["custom-1"] = certificates.map((certificate: string) => ({
       id: generateUUID(),
       title: certificate,
       subtitle: "",

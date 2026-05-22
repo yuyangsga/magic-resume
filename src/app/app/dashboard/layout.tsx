@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
-import { Metadata } from "next";
 import { NextIntlClientProvider } from "@/i18n/compat/client";
-import { getLocale, getMessages, getTranslations } from "@/i18n/compat/server";
+import { getLocale, getMessages } from "@/i18n/compat/server";
 import Document from "@/components/Document";
 import { Providers } from "@/app/providers";
 import Client from "./client";
@@ -11,14 +10,7 @@ type Props = {
     locale: string;
   };
 };
-export async function generateMetadata({
-  params: { locale },
-}: Props): Promise<Metadata> {
-  const t = await getTranslations({ locale, namespace: "common" });
-  return {
-    title: t("title") + " - " + t("dashboard"),
-  };
-}
+
 export default async function LocaleLayout({ children }: Props) {
   const locale = await getLocale();
 
@@ -26,7 +18,7 @@ export default async function LocaleLayout({ children }: Props) {
 
   return (
     <Document locale={locale}>
-      <NextIntlClientProvider messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
         <Providers>
           <Client>{children}</Client>
         </Providers>

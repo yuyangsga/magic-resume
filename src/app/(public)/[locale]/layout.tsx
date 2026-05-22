@@ -1,14 +1,9 @@
 import { ReactNode } from "react";
-import { Metadata } from "next";
 import { notFound } from "@/lib/navigation";
 import { NextIntlClientProvider } from "@/i18n/compat/client";
-import {
-  getMessages,
-  getTranslations,
-  setRequestLocale
-} from "@/i18n/compat/server";
+import { getMessages, setRequestLocale } from "@/i18n/compat/server";
 import Document from "@/components/Document";
-import { locales } from "@/i18n/config";
+import { locales, type Locale } from "@/i18n/config";
 import { Providers } from "@/app/providers";
 
 type Props = {
@@ -16,46 +11,30 @@ type Props = {
   params: { locale: string };
 };
 
+const resolveLocale = (value: string): Locale | null =>
+  locales.includes(value as Locale) ? (value as Locale) : null;
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export async function generateMetadata({
-  params: { locale }
-}: Props): Promise<Metadata> {
-  const t = await getTranslations({ locale, namespace: "common" });
-  const baseUrl = "https://magicv.art";
-
-  return {
-    title: t("title") + " - " + t("subtitle"),
-    description: t("description"),
-    alternates: {
-      canonical: `${baseUrl}/${locale}`
-    },
-    openGraph: {
-      title: t("title"),
-      description: t("description"),
-      locale: locale,
-      alternateLocale: locale === "en" ? ["zh"] : ["en"]
-    }
-  };
-}
-
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params: { locale: rawLocale }
 }: Props) {
-  setRequestLocale(locale);
+  const locale = resolveLocale(rawLocale);
 
-  if (!locales.includes(locale as any)) {
+  if (!locale) {
     notFound();
   }
 
-  const messages = await getMessages();
+  setRequestLocale(locale);
+
+  const messages = await getMessages({ locale });
 
   return (
     <Document locale={locale}>
-      <NextIntlClientProvider messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
         <Providers>{children}</Providers>
       </NextIntlClientProvider>
     </Document>

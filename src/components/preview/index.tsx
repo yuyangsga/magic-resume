@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import throttle from "lodash/throttle";
 import { toast } from "sonner";
-import { DEFAULT_TEMPLATES } from "@/config";
+import { DEFAULT_TEMPLATES } from "@/components/templates/registry";
 import { cn } from "@/lib/utils";
 import { useResumeStore } from "@/store/useResumeStore";
 import { useAutoOnePage } from "@/hooks/useAutoOnePage";
@@ -231,7 +231,7 @@ const PreviewPanel = React.forwardRef<HTMLDivElement, PreviewPanelProps>(
               }}
               className="relative"
             >
-              <style jsx global>{`
+              <style>{`
               .grammar-error {
                 cursor: help;
                 border-bottom: 2px dashed;

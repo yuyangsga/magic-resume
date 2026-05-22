@@ -132,7 +132,7 @@
         "providerOpenAI": "OpenAI",
         "importing": "Importing, please wait...",
         "geminiConfigRequired": "Please configure Gemini API Key and Model ID in AI settings first",
-        "openaiConfigRequired": "Please configure OpenAI API Key, Model ID, API Endpoint, and Reasoning Effort in AI settings first",
+        "openaiConfigRequired": "Please configure OpenAI API Key, Model ID, and API Endpoint first. If reasoning parameters are enabled, also select a reasoning effort.",
         "pdfSuccess": "PDF imported successfully",
         "pdfError": "PDF import failed. Please check PDF content or AI configuration"
       },
@@ -208,6 +208,8 @@
           "apiKey": "OpenAI API Key",
           "modelId": "Model ID",
           "apiEndpoint": "API Endpoint, example: https://openai.example.org/v1",
+          "reasoningEnabled": "Send reasoning parameter",
+          "reasoningEnabledDescription": "Turn this off for OpenAI-compatible services that do not support reasoning_effort.",
           "reasoningEffort": "Reasoning Effort",
           "reasoningEffortPlaceholder": "Select reasoning effort",
           "reasoningEffortOptions": {

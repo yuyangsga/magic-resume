@@ -1,4 +1,5 @@
 export type AIModelType = "doubao" | "deepseek" | "openai" | "gemini";
+export type AIProvider = AIModelType;
 
 export const OPENAI_REASONING_EFFORTS = [
   "none",
@@ -26,6 +27,7 @@ export interface AIValidationContext {
   openaiModelId?: string;
   openaiApiEndpoint?: string;
   openaiReasoningEffort?: string;
+  openaiReasoningEnabled?: boolean;
   geminiApiKey?: string;
   geminiModelId?: string;
 }
@@ -70,7 +72,10 @@ export const AI_MODEL_CONFIGS: Record<AIModelType, AIModelConfig> = {
         context.openaiApiKey &&
         context.openaiModelId &&
         context.openaiApiEndpoint &&
-        isOpenAIReasoningEffort(context.openaiReasoningEffort)
+        (
+          context.openaiReasoningEnabled === false ||
+          isOpenAIReasoningEffort(context.openaiReasoningEffort)
+        )
       ),
   },
   gemini: {

@@ -1,8 +1,8 @@
 
-import { DateInput } from "@heroui/date-input";
+import { DateInput, type DateInputValue } from "@heroui/date-input";
 import { HeroUIProvider } from "@heroui/react";
-import { CalendarDate, parseDate } from "@internationalized/date";
-import { useState } from "react";
+import { parseDate } from "@internationalized/date";
+import { useState, type ComponentProps, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
 
 interface UnifiedDateRangeInputProps {
@@ -13,10 +13,20 @@ interface UnifiedDateRangeInputProps {
   className?: string;
 }
 
+type DateInputCompatProps = Omit<
+  ComponentProps<typeof DateInput>,
+  "value" | "onChange"
+> & {
+  value?: DateInputValue | null;
+  onChange?: (value: DateInputValue | null) => void;
+};
+
+const DateInputCompat = DateInput as unknown as ComponentType<DateInputCompatProps>;
+
 const SEPARATOR = " - ";
 const PRESENT_VALUES = new Set(["至今", "Present", "Now"]);
 
-const parsePart = (part: string): CalendarDate | null => {
+const parsePart = (part: string): DateInputValue | null => {
   if (!part) return null;
   const cleanPart = part.trim();
   if (PRESENT_VALUES.has(cleanPart)) return null;
@@ -25,7 +35,7 @@ const parsePart = (part: string): CalendarDate | null => {
     let isoStr = cleanPart.replace(/[./]/g, "-");
     if (isoStr.length === 7) isoStr += "-01";
     if (isoStr.length === 4) isoStr += "-01-01";
-    return parseDate(isoStr);
+    return parseDate(isoStr) as unknown as DateInputValue;
   } catch {
     return null;
   }
@@ -57,17 +67,17 @@ export function UnifiedDateRangeInput({
   onChange,
   className,
 }: UnifiedDateRangeInputProps) {
-  const [range, setRange] = useState<{ start: CalendarDate | null; end: CalendarDate | null }>(
+  const [range, setRange] = useState<{ start: DateInputValue | null; end: DateInputValue | null }>(
     () => parseRange(value)
   );
 
   const isPresent = value.includes("至今") || value.includes("Present");
 
   const updateValue = (
-    newStart: CalendarDate | null,
-    newEnd: CalendarDate | null
+    newStart: DateInputValue | null,
+    newEnd: DateInputValue | null
   ) => {
-    const format = (d: CalendarDate) =>
+    const format = (d: DateInputValue) =>
       `${d.year}/${d.month.toString().padStart(2, "0")}`;
 
     const startStr = newStart ? format(newStart) : "";
@@ -86,7 +96,7 @@ export function UnifiedDateRangeInput({
     onChange(`${startStr}${SEPARATOR}${endStr}`);
   };
 
-  const handleStartChange = (newStart: CalendarDate | null) => {
+  const handleStartChange = (newStart: DateInputValue | null) => {
     setRange((prev) => {
       const next = { start: newStart, end: prev.end };
       updateValue(next.start, next.end);
@@ -94,7 +104,7 @@ export function UnifiedDateRangeInput({
     });
   };
 
-  const handleEndChange = (newEnd: CalendarDate | null) => {
+  const handleEndChange = (newEnd: DateInputValue | null) => {
     setRange((prev) => {
       const next = { start: prev.start, end: newEnd };
       updateValue(next.start, next.end);
@@ -107,7 +117,7 @@ export function UnifiedDateRangeInput({
       <HeroUIProvider locale="ja-JP">
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <DateInput
+            <DateInputCompat
               value={range.start}
               onChange={handleStartChange}
               variant="bordered"
@@ -123,7 +133,7 @@ export function UnifiedDateRangeInput({
           </div>
           <span className="text-muted-foreground">-</span>
           <div className="flex-1 relative">
-            <DateInput
+            <DateInputCompat
               value={isPresent ? null : range.end}
               onChange={handleEndChange}
               variant="bordered"

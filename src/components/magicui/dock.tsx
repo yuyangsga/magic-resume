@@ -7,31 +7,43 @@ interface DockProps
   className?: string;
 }
 
+type NamedElementType = {
+  displayName?: string;
+  name?: string;
+};
+
+const getElementTypeName = (element: React.ReactElement) => {
+  const { type } = element;
+
+  if (typeof type === "string") {
+    return type;
+  }
+
+  return (type as NamedElementType).displayName ?? (type as NamedElementType).name;
+};
+
+const containsElementNamed = (node: React.ReactNode, name: string): boolean => {
+  if (!React.isValidElement<{ children?: React.ReactNode }>(node)) {
+    return false;
+  }
+
+  if (getElementTypeName(node) === name) {
+    return true;
+  }
+
+  return React.Children.toArray(node.props.children).some((child) =>
+    containsElementNamed(child, name)
+  );
+};
+
 export function Dock({ children, className, ...props }: DockProps) {
   // Convert children to array to handle them
   const childrenArray = React.Children.toArray(children);
 
   // Find the index of TemplateSheet for splitting
-  const templateSheetIndex = childrenArray.findIndex((child) => {
-    if (React.isValidElement(child)) {
-      const tooltip = child.props.children;
-      if (React.isValidElement(tooltip)) {
-        const trigger = tooltip.props.children.find(
-          (child: any) => child?.type?.name === "TooltipTrigger"
-        );
-        if (trigger) {
-          const content = trigger.props.children;
-          if (React.isValidElement(content)) {
-            const icon = content.props.children;
-            return (
-              React.isValidElement(icon) && icon.type?.name === "TemplateSheet"
-            );
-          }
-        }
-      }
-    }
-    return false;
-  });
+  const templateSheetIndex = childrenArray.findIndex((child) =>
+    containsElementNamed(child, "TemplateSheet")
+  );
 
   // If TemplateSheet is not found, render all children in a single group
   if (templateSheetIndex === -1) {

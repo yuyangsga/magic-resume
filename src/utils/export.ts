@@ -5,6 +5,13 @@ import { ResumeData } from "@/types/resume";
 import { generateResumeMarkdown, ResumeMarkdownOptions } from "@/utils/markdown";
 
 const INVALID_FILE_NAME_CHAR_REGEX = /[\\/:*?"<>|]/g;
+const EXPORT_DEBUG = import.meta.env.DEV;
+
+const logExportDebug = (message: string) => {
+  if (EXPORT_DEBUG) {
+    console.log(message);
+  }
+};
 
 const getSafeFileName = (title?: string) => {
   const normalized = (title || "resume")
@@ -63,7 +70,7 @@ export const getOptimizedStyles = () => {
     })
     .join("\n");
 
-  console.log(`Style processing took ${performance.now() - startTime}ms`);
+  logExportDebug(`Style processing took ${performance.now() - startTime}ms`);
   return styles;
 };
 
@@ -92,7 +99,7 @@ export const optimizeImages = async (element: HTMLElement) => {
     });
 
   await Promise.all(imagePromises);
-  console.log(`Image processing took ${performance.now() - startTime}ms`);
+  logExportDebug(`Image processing took ${performance.now() - startTime}ms`);
 };
 
 export interface ExportToPdfOptions {
@@ -259,7 +266,7 @@ export const exportToPdf = async ({
     downloadBlob(blob, fileName);
 
     if (successMessage) toast.success(successMessage);
-    console.log(`Total export took ${performance.now() - exportStartTime}ms`);
+    logExportDebug(`Total export took ${performance.now() - exportStartTime}ms`);
   } catch (error) {
     console.error("Export error:", error);
     if (errorMessage) toast.error(errorMessage);

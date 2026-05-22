@@ -3,6 +3,7 @@ import { Check, ExternalLink, Sparkles } from "lucide-react";
 import { useTranslations } from "@/i18n/compat/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -38,6 +39,7 @@ const AISettingsPage = () => {
     openaiModelId,
     openaiApiEndpoint,
     openaiReasoningEffort,
+    openaiReasoningEnabled,
     geminiApiKey,
     geminiModelId,
     setDoubaoApiKey,
@@ -47,6 +49,7 @@ const AISettingsPage = () => {
     setOpenaiModelId,
     setOpenaiApiEndpoint,
     setOpenaiReasoningEffort,
+    setOpenaiReasoningEnabled,
     setGeminiApiKey,
     setGeminiModelId,
     selectedModel,
@@ -133,7 +136,7 @@ const AISettingsPage = () => {
         openaiApiKey &&
         openaiModelId &&
         openaiApiEndpoint &&
-        openaiReasoningEffort
+        (openaiReasoningEnabled === false || openaiReasoningEffort)
       ),
     },
     {
@@ -367,6 +370,25 @@ const AISettingsPage = () => {
                     )}
 
                     {model.id === "openai" && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+                          <div className="space-y-1">
+                            <Label className="text-base font-medium">
+                              {t("dashboard.settings.ai.openai.reasoningEnabled")}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              {t("dashboard.settings.ai.openai.reasoningEnabledDescription")}
+                            </p>
+                          </div>
+                          <Switch
+                            checked={openaiReasoningEnabled}
+                            onCheckedChange={setOpenaiReasoningEnabled}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {model.id === "openai" && openaiReasoningEnabled && (
                       <div className="space-y-4">
                         <Label className="text-base font-medium">
                           {t("dashboard.settings.ai.openai.reasoningEffort")}

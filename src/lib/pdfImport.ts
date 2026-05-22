@@ -1,5 +1,5 @@
 import type { AIModelType } from "@/config/ai";
-import { addOpenAIReasoningEffort } from "@/lib/openai";
+import { maybeAddOpenAIReasoningEffort } from "@/lib/openai";
 
 export type PdfImportProvider = "gemini" | "openai";
 
@@ -9,6 +9,7 @@ export interface PdfImportConfig {
   openaiModelId?: string;
   openaiApiEndpoint?: string;
   openaiReasoningEffort?: string;
+  openaiReasoningEnabled?: boolean;
   geminiApiKey?: string;
   geminiModelId?: string;
 }
@@ -21,7 +22,8 @@ export const resolvePdfImportProvider = (
     config.openaiApiKey &&
     config.openaiModelId &&
     config.openaiApiEndpoint &&
-    config.openaiReasoningEffort
+    (config.openaiReasoningEnabled === false ||
+      config.openaiReasoningEffort)
   ) {
     return "openai";
   }
@@ -34,7 +36,8 @@ export const resolvePdfImportProvider = (
     config.openaiApiKey &&
     config.openaiModelId &&
     config.openaiApiEndpoint &&
-    config.openaiReasoningEffort
+    (config.openaiReasoningEnabled === false ||
+      config.openaiReasoningEffort)
   ) {
     return "openai";
   }
@@ -82,7 +85,8 @@ export const normalizePdfImages = (images?: string[]) =>
 
 export const buildOpenAIPdfImportRequestBody = (params: {
   model: string;
-  reasoningEffort: string;
+  reasoningEffort?: string;
+  reasoningEnabled?: boolean;
   systemInstruction: string;
   content: string;
   images: string[];
@@ -95,7 +99,7 @@ export const buildOpenAIPdfImportRequestBody = (params: {
     },
   }));
 
-  return addOpenAIReasoningEffort(
+  return maybeAddOpenAIReasoningEffort(
     {
       model: params.model,
       response_format: {
@@ -120,7 +124,8 @@ export const buildOpenAIPdfImportRequestBody = (params: {
         },
       ],
     },
-    params.reasoningEffort
+    params.reasoningEffort,
+    params.reasoningEnabled
   );
 };
 

@@ -133,7 +133,7 @@
         "providerOpenAI": "OpenAI",
         "importing": "正在导入，请稍候...",
         "geminiConfigRequired": "请先在 AI 服务商设置页配置 Gemini API Key 和模型 ID",
-        "openaiConfigRequired": "请先在 AI 服务商设置页配置 OpenAI API Key、模型 ID、API 端点和推理强度",
+        "openaiConfigRequired": "请先在 AI 服务商设置页配置 OpenAI API Key、模型 ID、API 端点；若开启推理参数，还需选择推理强度",
         "pdfSuccess": "PDF 导入成功",
         "pdfError": "PDF 导入失败，请检查 PDF 内容或 AI 配置"
       },
@@ -209,6 +209,8 @@
           "apiKey": "API Key",
           "modelId": "模型 ID",
           "apiEndpoint": "API 端点，如：https://openai.example.org/v1",
+          "reasoningEnabled": "发送推理参数",
+          "reasoningEnabledDescription": "关闭后将不发送 reasoning_effort，适合不支持该字段的 OpenAI 兼容服务。",
           "reasoningEffort": "推理强度",
           "reasoningEffortPlaceholder": "选择推理强度",
           "reasoningEffortOptions": {

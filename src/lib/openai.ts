@@ -25,3 +25,15 @@ export const addOpenAIReasoningEffort = <TBody extends ChatCompletionsBody>(
     reasoning_effort: normalized,
   };
 };
+
+export const maybeAddOpenAIReasoningEffort = <
+  TBody extends ChatCompletionsBody,
+>(
+  body: TBody,
+  reasoningEffort: unknown,
+  reasoningEnabled = true
+) => {
+  if (!reasoningEnabled) return body;
+
+  return addOpenAIReasoningEffort(body, reasoningEffort);
+};

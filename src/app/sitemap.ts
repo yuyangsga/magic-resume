@@ -1,13 +1,16 @@
-import { MetadataRoute } from "next";
+type SitemapEntry = {
+  url: string;
+  lastModified: Date;
+  changeFrequency: "daily";
+  priority: number;
+};
 
-export const runtime = "edge";
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default function sitemap(): SitemapEntry[] {
   const baseUrl = "https://magicv.art/";
 
   const routes = ["zh", "en"];
 
-  const sitemap: MetadataRoute.Sitemap = routes.map((route) => ({
+  const sitemap: SitemapEntry[] = routes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: "daily",

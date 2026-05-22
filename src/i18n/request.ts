@@ -1,5 +1,5 @@
 import { getRequestConfig } from "@/i18n/compat/server";
-import { defaultLocale, locales } from "./config";
+import { defaultLocale, locales, type Locale } from "./config";
 import { getUserLocale } from "./db";
 
 export default getRequestConfig(async ({ requestLocale }) => {
@@ -12,7 +12,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
 
   // Ensure that the incoming locale is valid
-  if (!locales.includes(locale as any)) {
+  if (!locales.includes(locale as Locale)) {
     locale = defaultLocale;
   }
 

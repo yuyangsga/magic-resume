@@ -21,6 +21,20 @@ test("prefers the selected OpenAI model for PDF import when configured", () => {
   assert.equal(provider, "openai");
 });
 
+test("prefers OpenAI for PDF import when reasoning is disabled", () => {
+  const provider = resolvePdfImportProvider({
+    selectedModel: "openai",
+    openaiApiKey: "sk-test",
+    openaiModelId: "gpt-4o-mini",
+    openaiApiEndpoint: "https://example.com/v1",
+    openaiReasoningEnabled: false,
+    geminiApiKey: "gemini-key",
+    geminiModelId: "gemini-flash-latest",
+  });
+
+  assert.equal(provider, "openai");
+});
+
 test("defaults to Gemini for non-vision selected models when Gemini is configured", () => {
   const provider = resolvePdfImportProvider({
     selectedModel: "deepseek",
@@ -42,10 +56,13 @@ test("builds OpenAI PDF import request body with image_url parts", () => {
       "data:image/jpeg;base64,BBBB",
     ],
   });
+  const bodyWithReasoning = body as typeof body & {
+    reasoning_effort: string;
+  };
 
   assert.deepEqual(body.response_format, { type: "json_object" });
   assert.equal(body.model, "gpt-4o-mini");
-  assert.equal(body.reasoning_effort, "medium");
+  assert.equal(bodyWithReasoning.reasoning_effort, "medium");
 
   const userMessage = body.messages[1];
   assert.equal(userMessage.role, "user");
@@ -63,12 +80,25 @@ test("builds OpenAI PDF import request body with image_url parts", () => {
   });
 });
 
+test("can omit OpenAI reasoning effort for compatible PDF import APIs", () => {
+  const body = buildOpenAIPdfImportRequestBody({
+    model: "gpt-4o-mini",
+    reasoningEnabled: false,
+    systemInstruction: "system prompt",
+    content: "extract this resume",
+    images: [],
+  });
+
+  assert.equal("reasoning_effort" in body, false);
+});
+
 test("requires OpenAI reasoning effort before marking OpenAI as configured", () => {
   assert.equal(
     AI_MODEL_CONFIGS.openai.validate({
       openaiApiKey: "sk-test",
       openaiModelId: "gpt-4o-mini",
       openaiApiEndpoint: "https://example.com/v1",
+      openaiReasoningEnabled: true,
     }),
     false
   );
@@ -79,6 +109,16 @@ test("requires OpenAI reasoning effort before marking OpenAI as configured", () 
       openaiModelId: "gpt-4o-mini",
       openaiApiEndpoint: "https://example.com/v1",
       openaiReasoningEffort: "medium",
+    }),
+    true
+  );
+
+  assert.equal(
+    AI_MODEL_CONFIGS.openai.validate({
+      openaiApiKey: "sk-test",
+      openaiModelId: "gpt-4o-mini",
+      openaiApiEndpoint: "https://example.com/v1",
+      openaiReasoningEnabled: false,
     }),
     true
   );

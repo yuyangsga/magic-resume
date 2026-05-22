@@ -39,9 +39,10 @@ export const storeFileHandle = async (
 ): Promise<void> => {
   await initDB();
   if (!db) throw new Error("Database not initialized");
+  const database = db;
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(HANDLE_STORE, "readwrite");
+    const transaction = database.transaction(HANDLE_STORE, "readwrite");
     const store = transaction.objectStore(HANDLE_STORE);
     const request = store.put(handle, key);
 
@@ -55,9 +56,10 @@ export const getFileHandle = async (
 ): Promise<FileSystemHandle | null> => {
   await initDB();
   if (!db) throw new Error("Database not initialized");
+  const database = db;
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(HANDLE_STORE, "readonly");
+    const transaction = database.transaction(HANDLE_STORE, "readonly");
     const store = transaction.objectStore(HANDLE_STORE);
     const request = store.get(key);
 
@@ -69,9 +71,10 @@ export const getFileHandle = async (
 export const storeConfig = async (key: string, value: any): Promise<void> => {
   await initDB();
   if (!db) throw new Error("Database not initialized");
+  const database = db;
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(CONFIG_STORE, "readwrite");
+    const transaction = database.transaction(CONFIG_STORE, "readwrite");
     const store = transaction.objectStore(CONFIG_STORE);
     const request = store.put(value, key);
 
@@ -83,9 +86,10 @@ export const storeConfig = async (key: string, value: any): Promise<void> => {
 export const getConfig = async (key: string): Promise<any> => {
   await initDB();
   if (!db) throw new Error("Database not initialized");
+  const database = db;
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(CONFIG_STORE, "readonly");
+    const transaction = database.transaction(CONFIG_STORE, "readonly");
     const store = transaction.objectStore(CONFIG_STORE);
     const request = store.get(key);
 

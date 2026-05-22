@@ -35,8 +35,12 @@ export async function getTranslations({
   return createTranslator(messages, namespace);
 }
 
-export function getRequestConfig<TArgs, TResult>(
-  callback: (args: TArgs) => TResult | Promise<TResult>
+export type RequestConfigArgs = {
+  requestLocale?: string | Promise<string | undefined>;
+};
+
+export function getRequestConfig<TResult>(
+  callback: (args: RequestConfigArgs) => TResult | Promise<TResult>
 ) {
   return callback;
 }
