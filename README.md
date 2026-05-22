@@ -31,6 +31,17 @@ Magic Resume is a modern online resume editor that makes creating professional r
 - 💾 Auto-save
 - 🔒 Local storage
 
+## Recent Improvements
+
+- Unified the AI service layer for polish, grammar check, and PDF resume import, sharing provider adapters across Doubao, DeepSeek, OpenAI, and Gemini.
+- Added structured AI JSON parsing and normalization for grammar errors and imported resume data.
+- Added OpenAI-compatible mode, allowing `reasoning_effort` to be disabled for third-party OpenAI-compatible gateways.
+- Removed legacy Next-style API routes and kept TanStack Start routes as the single server API source.
+- Restored project health checks with `pnpm test` and `pnpm typecheck`.
+- Removed the `DEFAULT_TEMPLATES` circular re-export to eliminate Vite/Rollup circular chunk warnings.
+- Added a shared rich text sanitizer for rendered resume HTML and imported resume content.
+- Cleaned up Next migration leftovers and added local File System Access API types for stricter TypeScript checks.
+
 ## 🛠️ Tech Stack
 
 - TanStack Start
